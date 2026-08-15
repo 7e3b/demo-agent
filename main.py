@@ -5,7 +5,7 @@ from fastapi import FastAPI, Response
 app = FastAPI()
 
 @app.get("/")
-async def root():
+def root():
     return Response()
 
 def main():
