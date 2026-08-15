@@ -8,5 +8,12 @@ app = FastAPI()
 async def root():
     return Response()
 
+def main():
+    if config.reload:
+        uvicorn.run("main:app", port=config.port, reload=True)
+    else:
+        uvicorn.run(app, port=config.port)
+
 if __name__ == '__main__':
-    uvicorn.run(app, port=config.port)
+    main()
+    
