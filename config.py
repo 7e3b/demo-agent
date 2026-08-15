@@ -6,6 +6,6 @@ class _Config(BaseModel):
     postgres: str
     gemini: str
 
-with open("config.json", "r") as f:
+with open("app.json", "r") as f:
     config = _Config.model_validate(json.load(f))
 
