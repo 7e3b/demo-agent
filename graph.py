@@ -6,6 +6,7 @@ from langgraph.graph.message import add_messages
 from langchain_core.messages import BaseMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from config import config
+from langgraph.checkpoint.base import BaseCheckpointSaver
 
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
@@ -26,4 +27,8 @@ builder.add_node("llm", llm)
 builder.add_edge(START, "llm")
 builder.add_edge("llm", END)
 
-graph = builder.compile()
+client = None
+
+def compile(checkpointer: BaseCheckpointSaver):
+    global client
+    client = builder.compile(checkpointer=checkpointer)

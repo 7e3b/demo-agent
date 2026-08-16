@@ -3,9 +3,20 @@ from config import config
 from fastapi import FastAPI, Response
 from langchain_core.messages import HumanMessage
 from pydantic import BaseModel
-from graph import graph
+import graph
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with AsyncPostgresSaver.from_conn_string(
+        config.postgres
+    ) as checkpointer:
+        await checkpointer.setup()
+        graph.compile(checkpointer)
+        yield
+
+app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 def root():
@@ -15,13 +26,12 @@ class ChatRequest(BaseModel):
     message: str
     thread_id: str
 
-
 class ChatResponse(BaseModel):
     message: str
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    result = await graph.ainvoke(
+    result = await graph.client.ainvoke(
         {"messages": [HumanMessage(content=request.message)]},
         config={"configurable": {"thread_id": request.thread_id}},
     )
