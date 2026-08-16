@@ -28,14 +28,16 @@ class _State(TypedDict):
 class Agent:
     _tools = [current_datetime, add, subtract, multiply,divide]
 
-    def __init__(self, mcp: MultiServerMCPClient, key: str):
+    def __init__(self, key: str, mcp: MultiServerMCPClient | None = None):
         self._mcp = mcp
         self._model = ChatGoogleGenerativeAI(model = "gemini-3.5-flash-lite", api_key = key)
         self._graph: CompiledStateGraph | None = None
 
     async def setup(self, checkpointer: BaseCheckpointSaver):
-        mcp_tools = await self._mcp.get_tools()
-        agent = create_agent(model = self._model, tools = [*self._tools, *mcp_tools])
+        tools = [*self._tools]
+        if self._mcp is not None:
+            tools.extend(await self._mcp.get_tools())
+        agent = create_agent(model = self._model, tools = tools)
 
         summarize = SummarizationNode(
             model = self._model,
