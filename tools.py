@@ -1,4 +1,10 @@
 from langchain.tools import tool
+from datetime import datetime
+
+@tool
+def current_datetime() -> str:
+    """Get the current date and time."""
+    return datetime.now().astimezone().isoformat()
 
 @tool
 def add(a: float, b: float) -> float:
