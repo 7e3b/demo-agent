@@ -1,22 +1,41 @@
 import uvicorn
-from config import config
-from fastapi import FastAPI, Response
-from langchain_core.messages import HumanMessage
-from pydantic import BaseModel
-import graph
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+
 from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Response
+from pydantic import BaseModel
+
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from langchain_mcp_adapters.client import MultiServerMCPClient
+
+from config import config
+from agent import Agent
+
+agent = Agent(
+    mcp = MultiServerMCPClient(
+        {
+            "user_service": {
+                "transport": "streamable_http",
+                "url": "http://localhost:4050/mcp",
+            },
+            "wallet_service": {
+                "transport": "streamable_http",
+                "url": "http://localhost:4051/mcp",
+            },
+        }
+    ),
+    key = config.gemini,
+)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with AsyncPostgresSaver.from_conn_string(
-        config.postgres
-    ) as checkpointer:
+    async with AsyncPostgresSaver.from_conn_string(config.postgres) as checkpointer:
         await checkpointer.setup()
-        await graph.compile(checkpointer)
+        await agent.setup(checkpointer = checkpointer)
         yield
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan = lifespan)
 
 @app.get("/")
 def root():
@@ -29,20 +48,16 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     message: str
 
-@app.post("/chat", response_model=ChatResponse)
+@app.post("/chat", response_model = ChatResponse)
 async def chat(request: ChatRequest):
-    result = await graph.client.ainvoke(
-        {"messages": [HumanMessage(content=request.message)]},
-        config={"configurable": {"thread_id": request.thread_id}},
+    message = await agent.ainvoke(
+        message = request.message,
+        thread_id = request.thread_id,
     )
-    message = result["messages"][-1]
-    content = message.content[0]
-    text = content['text']
-    return ChatResponse(message=text)
+    return ChatResponse(message = message)
 
 def main():
-    uvicorn.run(app, port=3000)
+    uvicorn.run(app, port = 3000)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-    
