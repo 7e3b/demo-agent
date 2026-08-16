@@ -1,10 +1,17 @@
+from dataclasses import dataclass
 from langchain.tools import tool
 from datetime import datetime
+from langgraph.prebuilt import ToolRuntime
+from zoneinfo import ZoneInfo
+
+@dataclass
+class Context:
+    timezone: ZoneInfo
 
 @tool
-def current_datetime() -> str:
+def current_datetime(runtime: ToolRuntime[Context]) -> str:
     """Get the current date and time."""
-    return datetime.now().astimezone().isoformat()
+    return datetime.now(runtime.context.timezone).isoformat()
 
 @tool
 def add(a: float, b: float) -> float:

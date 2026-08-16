@@ -1,6 +1,7 @@
 import uvicorn
 
 from contextlib import asynccontextmanager
+from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI, Response
 from pydantic import BaseModel
@@ -12,15 +13,15 @@ from config import config
 from agent import Agent
 
 agent = Agent(
-    mcp = MultiServerMCPClient(
-        {
-            "weather_service": {
-                "transport": "streamable_http",
-                "url": "http://localhost:4055/mcp",
-            },
-        }
-    ),
-    a2a = ["http://localhost:4052"],
+    # mcp = MultiServerMCPClient(
+    #     {
+    #         "weather_service": {
+    #             "transport": "streamable_http",
+    #             "url": "http://localhost:4055/mcp",
+    #         },
+    #     }
+    # ),
+    # a2a = ["http://localhost:4052"],
     key = config.gemini,
 )
 
@@ -39,6 +40,7 @@ def root():
     return Response()
 
 class ChatRequest(BaseModel):
+    timezone: str
     message: str
     thread_id: str
 
@@ -50,6 +52,7 @@ async def chat(request: ChatRequest):
     message = await agent.ainvoke(
         message = request.message,
         thread_id = request.thread_id,
+        timezone = ZoneInfo(request.timezone)
     )
     return ChatResponse(message = message)
 

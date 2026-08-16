@@ -18,6 +18,7 @@ from a2a.helpers import new_text_message, get_stream_response_text
 from a2a.types import Role, SendMessageRequest
 import httpx
 import re
+from tools import Context
 
 def _format_agent_name(name: str) -> str:
     return re.sub(r"[^a-zA-Z0-9_-]", "_", name).lower()
@@ -95,10 +96,10 @@ class Agent:
 
         self._graph = builder.compile(checkpointer=checkpointer)
 
-    async def ainvoke(self, message: str, thread_id: str) -> str:
+    async def ainvoke(self, message: str, thread_id: str, timezone: str) -> str:
         if self._graph is None:
             raise RuntimeError(
-                "Agent has not been setup"
+                "Graph has not been setup"
             )
         result = await self._graph.ainvoke(
             {
@@ -106,12 +107,12 @@ class Agent:
                     HumanMessage(content = message),
                 ],
             },
-            config={
+            config = {
                 "configurable": {
-                    "thread_id": 
-                    thread_id
+                    "thread_id": thread_id
                 },
             },
+            context = Context(timezone = timezone)
         )
         message = result["messages"][-1]
         return message.content[0]["text"]
