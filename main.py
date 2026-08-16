@@ -40,12 +40,8 @@ async def chat(request: ChatRequest):
     text = content['text']
     return ChatResponse(message=text)
 
-
 def main():
-    if config.reload:
-        uvicorn.run("main:app", port=config.port, reload=True)
-    else:
-        uvicorn.run(app, port=config.port)
+    uvicorn.run(app, port=3000)
 
 if __name__ == '__main__':
     main()
