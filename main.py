@@ -13,7 +13,7 @@ async def lifespan(app: FastAPI):
         config.postgres
     ) as checkpointer:
         await checkpointer.setup()
-        graph.compile(checkpointer)
+        await graph.compile(checkpointer)
         yield
 
 app = FastAPI(lifespan=lifespan)
