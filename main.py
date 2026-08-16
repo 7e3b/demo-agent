@@ -14,19 +14,15 @@ from agent import Agent
 agent = Agent(
     mcp = MultiServerMCPClient(
         {
-            "user_service": {
+            "weather_service": {
                 "transport": "streamable_http",
-                "url": "http://localhost:4050/mcp",
-            },
-            "wallet_service": {
-                "transport": "streamable_http",
-                "url": "http://localhost:4051/mcp",
+                "url": "http://localhost:4055/mcp",
             },
         }
     ),
+    a2a = ["http://localhost:4052"],
     key = config.gemini,
 )
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,6 +30,7 @@ async def lifespan(app: FastAPI):
         await checkpointer.setup()
         await agent.setup(checkpointer = checkpointer)
         yield
+        await agent.close()
 
 app = FastAPI(lifespan = lifespan)
 
