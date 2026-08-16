@@ -43,8 +43,9 @@ class Agent:
             a2a: list[str] | None = None
         ):
         self._mcp = mcp
-        self._a2a = a2a
+        self._a2a: list[str] = a2a or [] 
         self._a2a_clients: list[Client] = []
+        self._httpx_client: httpx.AsyncClient | None = None
         self._model = ChatGoogleGenerativeAI(model = "gemini-3.5-flash-lite", api_key = key)
         self._graph: CompiledStateGraph | None = None
 
@@ -185,5 +186,6 @@ class Agent:
     async def close(self):
         for client in self._a2a_clients:
             await client.close()
+        self._a2a_clients.clear()
         if self._httpx_client is not None:
             await self._httpx_client.aclose()
