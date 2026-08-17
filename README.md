@@ -216,7 +216,8 @@ Example:
 
 ```json
 {
-  "postgres": "postgresql://postgres:postgres@localhost:5432/postgres",
+  "port": 3000,
+  "postgres": "postgres://postgres:postgres@localhost:5432/postgres",
   "gemini": "YOUR_GEMINI_API_KEY"
 }
 ```
@@ -274,7 +275,8 @@ Create `app.json` in the project root:
 
 ```json
 {
-  "postgres": "postgresql://postgres:postgres@localhost:5432/postgres",
+  "port": 3000,
+  "postgres": "postgres://postgres:postgres@localhost:5432/postgres",
   "gemini": "YOUR_GEMINI_API_KEY"
 }
 ```
@@ -286,7 +288,7 @@ The PostgreSQL database is used by `AsyncPostgresSaver` to persist LangGraph che
 Example connection string:
 
 ```text
-postgresql://postgres:postgres@localhost:5432/postgres
+postgres://postgres:postgres@localhost:5432/postgres
 ```
 
 The checkpointer is initialized during application startup:

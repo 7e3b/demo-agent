@@ -57,7 +57,7 @@ async def chat(request: ChatRequest):
     return ChatResponse(message = message)
 
 def main():
-    uvicorn.run(app, port = 3000)
+    uvicorn.run(app, port = config.port)
 
 if __name__ == "__main__":
     main()

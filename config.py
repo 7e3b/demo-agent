@@ -2,6 +2,7 @@ import json
 from pydantic import BaseModel
 
 class Config(BaseModel):
+    port: int
     postgres: str
     gemini: str
 
